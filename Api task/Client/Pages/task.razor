@@ -1,0 +1,74 @@
+﻿<h3>task</h3>
+<!-- Views/Home/Index.cshtml -->
+
+@page
+@model IEnumerable<TaskModel>
+
+<h1>Task Manager</h1>
+
+<form id="taskForm">
+    <label for="title">Title:</label>
+    <input type="text" id="title" />
+    <br />
+    <label for="description">Description:</label>
+    <textarea id="description"></textarea>
+    <br />
+    <button type="button" onclick="createTask()">Create Task</button>
+</form>
+
+<h2>All Tasks</h2>
+<ul id="taskList">
+    @foreach (var task in Model)
+    {
+        <li>@task.Title - @task.Description</li>
+    }
+</ul>
+
+<script>
+    async function createTask() {
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+
+        const response = await fetch('/Home/CreateTask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, description })
+        });
+
+        if (response.ok) {
+            // Refresh the task list
+            loadTasks();
+        } else {
+            console.error('Failed to create task');
+        }
+    }
+
+    async function loadTasks() {
+        const response = await fetch('/Home/GetAllTasks');
+        if (response.ok) {
+            const tasks = await response.json();
+
+            // Update the task list
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = `${task.title} - ${task.description}`;
+                taskList.appendChild(li);
+            });
+        } else {
+            console.error('Failed to fetch tasks');
+        }
+    }
+
+    // Load tasks when the page is loaded
+    window.onload = loadTasks;
+</script>
+
+
+@code {
+
+}
